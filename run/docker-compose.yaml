@@ -1,0 +1,15 @@
+version: "3.4"
+services:
+  axreng-backend:
+    container_name: axreng-backend
+    image: axreng/backend:latest
+    build:
+      context: ../
+      dockerfile: $PWD/Dockerfile
+    environment:
+      - BASE_URL=http://hiring.axreng.com/
+      - KEYWORD="four"
+    ports:
+      - "4567:4567" # StandartPort
+    volumes:
+      - $HOME/.m2":/root/.m2

@@ -1,0 +1,6 @@
+
+Q	java:S125"<This block of commented-out lines of code should be removed.(ıòÃç
+V
+java:S1858"@"getenv" returns a string, there's no need to call "toString()".(Ä´‚û
+N	java:S106"9Replace this use of System.out or System.err by a logger.(ñ¹ª„
+S	java:S106"9Replace this use of System.out or System.err by a logger.(ÉåÖîüÿÿÿÿ
