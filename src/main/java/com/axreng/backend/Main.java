@@ -19,7 +19,8 @@ public class Main {
 
 
         logger.info("Aqui");
-        logger.info(Scrap.request());
+        Scrap.request().forEach(logger::info);
+
 
     }
 }
