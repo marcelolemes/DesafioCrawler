@@ -19,7 +19,7 @@ public class Main {
 
 
         logger.info("Aqui");
-        Scrap.request().forEach(logger::info);
+        Scrap.request(System.getenv("BASE_URL")).forEach(logger::debug);
 
 
     }
