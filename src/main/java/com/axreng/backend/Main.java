@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
-import com.axreng.backend.Scrap;
 import static spark.Spark.*;
 
 
@@ -19,7 +18,7 @@ public class Main {
 
 
         logger.info("Aqui");
-        Scrap.request(System.getenv("BASE_URL")).forEach(logger::debug);
+        Scrap.process(System.getenv("BASE_URL"));
 
 
     }
