@@ -1,6 +1,5 @@
-package com.axreng.backend;
+package com.axreng.backend.crawler.service;
 
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,31 +16,39 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Scrap {
+public class CrawlerService {
     final static Set<String> processedLinks = new HashSet<>();
-    static Logger logger = LoggerFactory.getLogger(Scrap.class);
+    static int counter = 1;
 
-    public static Set<String> baseUrlLinkExtract(String baseUrl, String keyword) throws ExecutionException, InterruptedException {
+    static Logger logger = LoggerFactory.getLogger(CrawlerService.class);
+
+    public static void baseUrlLinkExtract(String baseUrl, String keyword) throws ExecutionException, InterruptedException {
+        final int limit = System.getenv("MAX_RESULTS") != null ?
+                Integer.parseInt(
+                        System.getenv("MAX_RESULTS")) : -1;
         Set<String> innerLinks = new HashSet<>();
         String html = linkProcessor(baseUrl);
 
         String urlPattern1 = "(href=)+[^\\s]+[\\w]+[^\"]";
         Pattern pattern = Pattern.compile(urlPattern1);
         Matcher matcher = pattern.matcher(html);
-
+        if(counter==limit){
+            return;
+        }
         while (matcher.find()) {
             String uriTemp = matcher.group().replace("href=\"", "");
             if (uriTemp.contains("</a>") || uriTemp.contains("<")) {
             } else {
                 try {
                     if (!URI.create(uriTemp).isAbsolute() && (uriTemp.contains(".html"))) {
-                        uriTemp = String.valueOf((new URL(new URL(baseUrl), uriTemp)));
+                        uriTemp = relativeToAbsoluteUrl(baseUrl, uriTemp);
                         innerLinks.add(uriTemp);
                         if (!processedLinks.contains(uriTemp)) {
                             processedLinks.add(uriTemp);
-                            logger.info(uriTemp);
                             if (haveKeyword(uriTemp, keyword)) {
-                                logger.warn("Result found: " + uriTemp);
+                                //logger.warn("Result found: " + uriTemp);
+                                logger.warn("Result " + counter + " found: " + uriTemp);
+                                counter++;
                             }
                             baseUrlLinkExtract(uriTemp, keyword);
                         }
@@ -49,35 +56,51 @@ public class Scrap {
                     }
                 } catch (IllegalArgumentException ex) {
                     logger.error(uriTemp);
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
                 }
             }
         }
 
-        return innerLinks;
+        //return innerLinks;
 
     }
 
-    public static void process(String uri, String keyword) throws ExecutionException, InterruptedException, MalformedURLException {
-        validateUrl(uri);
-        baseUrlLinkExtract(uri, keyword);
+    public static void process(String uri, String keyword) {
+        if (validUrl(uri)) {
+            try {
 
+                baseUrlLinkExtract(uri, keyword);
+            } catch (ExecutionException executionException) {
+                logger.error("Erro de execução: " + executionException.getMessage());
+            } catch (InterruptedException interruptedException) {
+                logger.error("Erro de interrupção: " + interruptedException.getMessage());
+            } catch (Exception exception) {
+                logger.error("Exceção ainda não tratada: " + exception.getMessage());
+            }
+        }
     }
 
-    private static void validateUrl(String url) throws MalformedURLException {
+    private static boolean validUrl(String url) {
         String urlPattern = "(www|http:|https:)+[^\\s]+[\\w]";
         Pattern pattern = Pattern.compile(urlPattern);
         Matcher matcher = pattern.matcher(url);
         boolean matchFound = matcher.find();
-        if (matchFound) {
+        if (matchFound && url.endsWith("/")) {
             try {
                 new URL(url);
+                return true;
             } catch (MalformedURLException ex) {
                 throw new IllegalArgumentException("Link inválido");
             }
         } else {
             throw new IllegalArgumentException("Link Não HTTP encontrado.");
+        }
+    }
+
+    private static String relativeToAbsoluteUrl(String baseUrl, String uri) {
+        try {
+            return String.valueOf((new URL(new URL(baseUrl), uri)));
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Link inválido");
         }
     }
 
@@ -98,9 +121,9 @@ public class Scrap {
     }
 
     private static boolean haveKeyword(String uri, String keyword) throws ExecutionException, InterruptedException {
-        return linkProcessor(uri).contains(keyword);
+        return linkProcessor(uri).toLowerCase().contains(keyword.toLowerCase());
     }
 
-    public Scrap() throws URISyntaxException {
+    public CrawlerService() throws URISyntaxException {
     }
 }

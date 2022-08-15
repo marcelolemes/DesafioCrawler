@@ -8,7 +8,8 @@ services:
       dockerfile: $PWD/Dockerfile
     environment:
       - BASE_URL=http://hiring.axreng.com/
-      - KEYWORD="four"
+      - KEYWORD=FOUR
+      - MAX_RESULTS=4
     ports:
       - "4567:4567" # StandartPort
     volumes:
