@@ -54,7 +54,7 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
                         if (!processedLinks.contains(uriTemp)) {
                             processedLinks.add(uriTemp);
                             if (haveKeyword(uriTemp, keyword)) {
-                                logger.warn("Result " + counter.get() + " found: " + uriTemp);
+                                logger.warn("Result found: " + uriTemp);
                                 counter.incrementAndGet();
                                 result.add(uriTemp);
                             }
