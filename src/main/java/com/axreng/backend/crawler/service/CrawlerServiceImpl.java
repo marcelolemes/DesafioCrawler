@@ -10,21 +10,28 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import static com.axreng.backend.crawler.service.auxiliar.Conditions.reachLimit;
 
-public class CrawlerServiceImpl {
-    final static Set<String> processedLinks = new HashSet<>();
-    static int counter = 1;
+public class CrawlerServiceImpl extends Thread implements CrawlerService {
+    final static Set<String> processedLinks = Collections.synchronizedSet(new HashSet<>());
+    final Set<String> result = Collections.synchronizedSet(new HashSet<>());
 
-    static Logger logger = LoggerFactory.getLogger(CrawlerServiceImpl.class);
+    static Logger logger = LoggerFactory.getLogger(CrawlerService.class);
 
-    public static Set<String> baseUrlLinkExtract(String baseUrl, String keyword) throws ExecutionException, InterruptedException {
-        final Set<String> result = new HashSet<>();
+    public Set<String> baseUrlLinkExtract(AtomicInteger counter,
+                                          String baseUrl,
+                                          String keyword)
+            throws ExecutionException, InterruptedException {
+
+
         final int limit = System.getenv("MAX_RESULTS") != null ?
                 Integer.parseInt(
                         System.getenv("MAX_RESULTS")) : -1;
@@ -34,12 +41,9 @@ public class CrawlerServiceImpl {
         String urlPattern1 = "(href=)+[^\\s]+[\\w]+[^\"]";
         Pattern pattern = Pattern.compile(urlPattern1);
         Matcher matcher = pattern.matcher(html);
-        if (counter == limit) {
-            return result;
-        }
-
         while (matcher.find() &&
-                reachLimit.test(counter,limit)) {
+                reachLimit.test(counter.get(), limit)) {
+
             String uriTemp = matcher.group().replace("href=\"", "");
             if (uriTemp.contains("</a>") || uriTemp.contains("<")) {
             } else {
@@ -50,29 +54,30 @@ public class CrawlerServiceImpl {
                         if (!processedLinks.contains(uriTemp)) {
                             processedLinks.add(uriTemp);
                             if (haveKeyword(uriTemp, keyword)) {
-                                logger.warn("Result " + counter + " found: " + uriTemp);
+                                logger.warn("Result " + counter.get() + " found: " + uriTemp);
+                                counter.incrementAndGet();
                                 result.add(uriTemp);
-                                counter++;
                             }
-                            baseUrlLinkExtract(uriTemp, keyword);
+                            baseUrlLinkExtract(counter, uriTemp, keyword);
                         }
 
                     }
                 } catch (IllegalArgumentException ex) {
-                    logger.error(uriTemp);
+
                 }
             }
+
         }
 
         return result;
 
     }
 
-    public static void process(String uri, String keyword) {
+    @Override
+    public void run(AtomicInteger counter, String uri, String keyword) {
         if (validUrl(uri)) {
             try {
-                baseUrlLinkExtract(uri, keyword);
-                logger.warn("Execução encerrada!");
+                this.baseUrlLinkExtract(counter, uri, keyword);
             } catch (ExecutionException executionException) {
                 logger.error("Erro de execução: " + executionException.getMessage());
             } catch (InterruptedException interruptedException) {

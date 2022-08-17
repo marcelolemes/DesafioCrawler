@@ -5,13 +5,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
 
 public class Main {
     static Logger logger = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws MalformedURLException, ExecutionException, InterruptedException {
+    public static void main(String[] args) throws MalformedURLException, ExecutionException, InterruptedException, URISyntaxException {
         CrawlerController.runController();
     }
 }
