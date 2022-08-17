@@ -1,7 +1,6 @@
 package com.axreng.backend.crawler.controller;
 
-import com.axreng.backend.Main;
-import com.axreng.backend.crawler.service.CrawlerService;
+import com.axreng.backend.crawler.service.CrawlerServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,7 @@ public class CrawlerController {
 
         post("/crawl", (req, res) ->
                 "POST /crawl" + System.lineSeparator() + req.body());
-        CrawlerService.
+        CrawlerServiceImpl.
                 process(
                         System.getenv("BASE_URL"),
                         System.getenv("KEYWORD"));

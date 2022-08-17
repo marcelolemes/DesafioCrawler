@@ -15,14 +15,16 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.axreng.backend.crawler.service.auxiliar.Conditions.reachLimit;
 
-public class CrawlerService {
+public class CrawlerServiceImpl {
     final static Set<String> processedLinks = new HashSet<>();
     static int counter = 1;
 
-    static Logger logger = LoggerFactory.getLogger(CrawlerService.class);
+    static Logger logger = LoggerFactory.getLogger(CrawlerServiceImpl.class);
 
-    public static void baseUrlLinkExtract(String baseUrl, String keyword) throws ExecutionException, InterruptedException {
+    public static Set<String> baseUrlLinkExtract(String baseUrl, String keyword) throws ExecutionException, InterruptedException {
+        final Set<String> result = new HashSet<>();
         final int limit = System.getenv("MAX_RESULTS") != null ?
                 Integer.parseInt(
                         System.getenv("MAX_RESULTS")) : -1;
@@ -32,10 +34,12 @@ public class CrawlerService {
         String urlPattern1 = "(href=)+[^\\s]+[\\w]+[^\"]";
         Pattern pattern = Pattern.compile(urlPattern1);
         Matcher matcher = pattern.matcher(html);
-        if(counter==limit){
-            return;
+        if (counter == limit) {
+            return result;
         }
-        while (matcher.find()) {
+
+        while (matcher.find() &&
+                reachLimit.test(counter,limit)) {
             String uriTemp = matcher.group().replace("href=\"", "");
             if (uriTemp.contains("</a>") || uriTemp.contains("<")) {
             } else {
@@ -46,8 +50,8 @@ public class CrawlerService {
                         if (!processedLinks.contains(uriTemp)) {
                             processedLinks.add(uriTemp);
                             if (haveKeyword(uriTemp, keyword)) {
-                                //logger.warn("Result found: " + uriTemp);
                                 logger.warn("Result " + counter + " found: " + uriTemp);
+                                result.add(uriTemp);
                                 counter++;
                             }
                             baseUrlLinkExtract(uriTemp, keyword);
@@ -60,21 +64,22 @@ public class CrawlerService {
             }
         }
 
-        //return innerLinks;
+        return result;
 
     }
 
     public static void process(String uri, String keyword) {
         if (validUrl(uri)) {
             try {
-
                 baseUrlLinkExtract(uri, keyword);
+                logger.warn("Execução encerrada!");
             } catch (ExecutionException executionException) {
                 logger.error("Erro de execução: " + executionException.getMessage());
             } catch (InterruptedException interruptedException) {
                 logger.error("Erro de interrupção: " + interruptedException.getMessage());
             } catch (Exception exception) {
-                logger.error("Exceção ainda não tratada: " + exception.getMessage());
+                logger.error("Exceção ainda não tratada: ");
+                exception.printStackTrace();
             }
         }
     }
@@ -124,6 +129,6 @@ public class CrawlerService {
         return linkProcessor(uri).toLowerCase().contains(keyword.toLowerCase());
     }
 
-    public CrawlerService() throws URISyntaxException {
+    public CrawlerServiceImpl() throws URISyntaxException {
     }
 }

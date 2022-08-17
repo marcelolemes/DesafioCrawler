@@ -1,3 +1,5 @@
-com/axreng/backend/crawler/controller/CrawlerController.class
-com/axreng/backend/crawler/service/CrawlerService.class
 com/axreng/backend/Main.class
+com/axreng/backend/crawler/service/auxiliar/Conditions.class
+com/axreng/backend/crawler/service/CrawlerServiceImpl.class
+com/axreng/backend/crawler/controller/CrawlerController.class
+com/axreng/backend/crawler/service/auxiliar/MagicNumbers.class
