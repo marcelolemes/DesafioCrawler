@@ -10,9 +10,7 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -21,6 +19,9 @@ import java.util.regex.Pattern;
 import static com.axreng.backend.crawler.service.auxiliar.Conditions.reachLimit;
 
 public class CrawlerServiceImpl extends Thread implements CrawlerService {
+    final int limit = System.getenv("MAX_RESULTS") != null ?
+            Integer.parseInt(
+                    System.getenv("MAX_RESULTS")) : -1;
     final static Set<String> processedLinks = Collections.synchronizedSet(new HashSet<>());
     final Set<String> result = Collections.synchronizedSet(new HashSet<>());
 
@@ -30,12 +31,7 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
                                           String baseUrl,
                                           String keyword)
             throws ExecutionException, InterruptedException {
-
-
-        final int limit = System.getenv("MAX_RESULTS") != null ?
-                Integer.parseInt(
-                        System.getenv("MAX_RESULTS")) : -1;
-        Set<String> innerLinks = new HashSet<>();
+        //  Set<String> innerLinks = new HashSet<>();
         String html = linkProcessor(baseUrl);
 
         String urlPattern1 = "(href=)+[^\\s]+[\\w]+[^\"]";
@@ -44,26 +40,31 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
         while (matcher.find() &&
                 reachLimit.test(counter.get(), limit)) {
 
-            String uriTemp = matcher.group().replace("href=\"", "");
-            if (uriTemp.contains("</a>") || uriTemp.contains("<")) {
+            String innerUri = validateStringLink(matcher.group());
+
+            if ((innerUri.contains("</a>") || innerUri.contains("<")) && innerUri.contains("mail")) {
             } else {
                 try {
-                    if (!URI.create(uriTemp).isAbsolute() && (uriTemp.contains(".html"))) {
-                        uriTemp = relativeToAbsoluteUrl(baseUrl, uriTemp);
-                        innerLinks.add(uriTemp);
-                        if (!processedLinks.contains(uriTemp)) {
-                            processedLinks.add(uriTemp);
-                            if (haveKeyword(uriTemp, keyword)) {
-                                logger.warn("Result found: " + uriTemp);
+                    if (!URI.create(innerUri).isAbsolute() && (innerUri.contains(".html"))) {
+                        innerUri = relativeToAbsoluteUrl(baseUrl, innerUri);
+                        if (!processedLinks.contains(innerUri)) {
+                            processedLinks.add(innerUri);
+                            if (haveKeyword(innerUri, keyword)) {
+                                logger.warn("Result found: " + innerUri);
                                 counter.incrementAndGet();
-                                result.add(uriTemp);
+                                result.add(innerUri);
                             }
-                            baseUrlLinkExtract(counter, uriTemp, keyword);
+                            baseUrlLinkExtract(counter, innerUri, keyword);
                         }
 
                     }
                 } catch (IllegalArgumentException ex) {
+                    logger.warn("Um erro ocorreu na URL: " + innerUri + " " + ex.getMessage());
 
+                    for (Character character : innerUri.toCharArray()) {
+                        logger.error("" + character);
+                        logger.error("" + Character.isSpaceChar(character.charValue()));
+                    }
                 }
             }
 
@@ -99,10 +100,10 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
                 new URL(url);
                 return true;
             } catch (MalformedURLException ex) {
-                throw new IllegalArgumentException("Link inválido");
+                throw new IllegalArgumentException("Link inválido" + url);
             }
         } else {
-            throw new IllegalArgumentException("Link Não HTTP encontrado.");
+            throw new IllegalArgumentException("Link Não HTTP encontrado. " + url);
         }
     }
 
@@ -110,7 +111,7 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
         try {
             return String.valueOf((new URL(new URL(baseUrl), uri)));
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Link inválido");
+            throw new IllegalArgumentException("Link inválido " + uri);
         }
     }
 
@@ -125,13 +126,26 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
                     .thenApply(HttpResponse::body)
                     .get());
         } catch (Exception e) {
-            logger.error("Não foi possível conectar, verifique a URL!");
+            logger.error("Não foi possível conectar, verifique a URL! " + Uri);
         }
         return html.toString();
     }
 
     private static boolean haveKeyword(String uri, String keyword) throws ExecutionException, InterruptedException {
         return linkProcessor(uri).toLowerCase().contains(keyword.toLowerCase());
+    }
+
+    private String validateStringLink(String inputUrl) {
+        final List<String> StringRemoveList =
+                Arrays.asList("href=\"", "\\", ">Prev", ">Next", "</a>", "<td",
+                        "<td>", "</td>", "<tr>", "</tr>", "<th", "<hr", "<hr>", "</table>","\"");
+
+        inputUrl = inputUrl.replaceAll("[\\s|\\u00A0]+", "");
+        for (String removeString : StringRemoveList) {
+            inputUrl = inputUrl.replace(removeString, "");
+        }
+
+        return inputUrl;
     }
 
     public CrawlerServiceImpl() throws URISyntaxException {

@@ -22,15 +22,16 @@ public class CrawlerController {
 
         post("/crawl", (req, res) ->
                 "POST /crawl" + System.lineSeparator() + req.body());
+
         CrawlerService crawlerService;
         crawlerService =
                 CrawlerService.build();
 
 
 
-        for (int x = MagicNumbers.ZERO.getValue();
-             x <= MagicNumbers.REPETICOES_THREAD_LOOP.getValue();
-             x++) {
+        for (int threadsNumber = MagicNumbers.ZERO.getValue();
+             threadsNumber <= MagicNumbers.REPETICOES_THREAD_LOOP.getValue();
+             threadsNumber++) {
 
             new Thread(() -> crawlerService.
                     run(counter,
