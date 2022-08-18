@@ -7,9 +7,10 @@ services:
       context: ../
       dockerfile: $PWD/Dockerfile
     environment:
-      - BASE_URL=http://hiring.axreng.com/
+      #- BASE_URL=http://hiring.axreng.com/
+      - BASE_URL=https://www.baeldung.com/
       - KEYWORD=FOUR
-      - MAX_RESULTS=10
+      - MAX_RESULTS=20
     ports:
       - "4567:4567" # StandartPort
     volumes:

@@ -1,6 +1,8 @@
 /mnt/d/Documentos/DEV/Java_Challenges_2022/axreng-test/src/main/java/com/axreng/backend/Main.java
+/mnt/d/Documentos/DEV/Java_Challenges_2022/axreng-test/src/main/java/com/axreng/backend/crawler/service/auxiliar/FixedStrings.java
 /mnt/d/Documentos/DEV/Java_Challenges_2022/axreng-test/src/main/java/com/axreng/backend/crawler/service/auxiliar/MagicNumbers.java
 /mnt/d/Documentos/DEV/Java_Challenges_2022/axreng-test/src/main/java/com/axreng/backend/crawler/controller/CrawlerController.java
 /mnt/d/Documentos/DEV/Java_Challenges_2022/axreng-test/src/main/java/com/axreng/backend/crawler/service/auxiliar/Conditions.java
 /mnt/d/Documentos/DEV/Java_Challenges_2022/axreng-test/src/main/java/com/axreng/backend/crawler/service/CrawlerService.java
+/mnt/d/Documentos/DEV/Java_Challenges_2022/axreng-test/src/main/java/com/axreng/backend/crawler/service/auxiliar/AuxiliarMethods.java
 /mnt/d/Documentos/DEV/Java_Challenges_2022/axreng-test/src/main/java/com/axreng/backend/crawler/service/CrawlerServiceImpl.java

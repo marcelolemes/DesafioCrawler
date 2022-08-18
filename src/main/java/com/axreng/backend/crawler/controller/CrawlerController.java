@@ -18,7 +18,7 @@ public class CrawlerController {
         AtomicInteger counter = new AtomicInteger(1);
 
         get("/crawl/status", (req, res) ->
-                counter.get()+" Registros encontrados e contando");
+                (counter.get())-1+" Registros encontrados e contando...");
 
         post("/crawl", (req, res) ->
                 "POST /crawl" + System.lineSeparator() + req.body());
@@ -39,7 +39,7 @@ public class CrawlerController {
                             System.getenv("KEYWORD"))).start();
         }
 
-        logger.warn("Execução encerrada!");
+        //logger.warn("Execução encerrada!");
     }
 
 }
