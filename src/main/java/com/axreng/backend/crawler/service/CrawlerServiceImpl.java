@@ -20,8 +20,6 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
     }
 
     final static Set<String> processedLinks = Collections.synchronizedSet(new HashSet<>());
-    final Set<String> result = Collections.synchronizedSet(new HashSet<>());
-
     static Logger logger = LoggerFactory.getLogger(CrawlerService.class);
 
     private void urlAnalysis(int limit,
@@ -44,9 +42,8 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
                             if (Conditions.haveKeyword(innerUri, keyword)) {
                                 logger.warn("Result found: " + innerUri);
                                 counter.incrementAndGet();
-                                result.add(innerUri);
                             }
-                            urlAnalysis(limit,counter, innerUri, keyword);
+                            urlAnalysis(limit, counter, innerUri, keyword);
                         }
                     }
                 } catch (IllegalArgumentException ex) {
