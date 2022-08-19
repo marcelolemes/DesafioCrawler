@@ -7,7 +7,7 @@ services:
       context: ../
       dockerfile: $PWD/Dockerfile
     environment:
-      - BASE_URL=http://hiring.axreng.com/
+      - BASE_URL=http://www.google.com/
       - KEYWORD=FOUR
       - MAX_RESULTS=20
     ports:
