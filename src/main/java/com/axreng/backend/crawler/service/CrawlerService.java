@@ -8,5 +8,5 @@ public interface CrawlerService {
         return new CrawlerServiceImpl();
     }
 
-    void run(AtomicInteger counter, String uri, String keyword);
+    void run(int limit, AtomicInteger counter, String uri, String keyword);
 }

@@ -12,21 +12,22 @@ import static spark.Spark.get;
 import static spark.Spark.post;
 
 public class CrawlerController {
+    static final int limit = System.getenv("MAX_RESULTS") != null ?
+            Integer.parseInt(
+                    System.getenv("MAX_RESULTS")) : -1;
+
     static Logger logger = LoggerFactory.getLogger(CrawlerController.class);
 
-    public static void runController() throws  URISyntaxException {
+    public static void runController() throws URISyntaxException {
         AtomicInteger counter = new AtomicInteger(1);
 
         get("/crawl/status", (req, res) ->
-                (counter.get())-1+" Registros encontrados e contando...");
+                (counter.get()) - 1 + " Registros encontrados e contando...");
 
         post("/crawl", (req, res) ->
                 "POST /crawl" + System.lineSeparator() + req.body());
 
-        CrawlerService crawlerService;
-        crawlerService =
-                CrawlerService.build();
-
+        CrawlerService crawlerService = CrawlerService.build();
 
 
         for (int threadsNumber = MagicNumbers.ZERO.getValue();
@@ -34,12 +35,12 @@ public class CrawlerController {
              threadsNumber++) {
 
             new Thread(() -> crawlerService.
-                    run(counter,
+                    run(limit,counter,
                             System.getenv("BASE_URL"),
                             System.getenv("KEYWORD"))).start();
         }
 
-        //logger.warn("Execução encerrada!");
+
     }
 
 }

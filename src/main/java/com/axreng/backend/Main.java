@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 public class Main {
     static Logger logger = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws MalformedURLException, ExecutionException, InterruptedException, URISyntaxException {
+    public static void main(String[] args) throws  URISyntaxException {
         CrawlerController.runController();
     }
 }

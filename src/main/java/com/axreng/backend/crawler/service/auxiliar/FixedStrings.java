@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class FixedStrings {
     public final static List<String> StringRemoveList =
-            Arrays.asList("href=\"", "\\", ">Prev", ">Next", "</a>", "<td",
+            Arrays.asList("href=\"", "\\", ">Prev", ">Next",">Home",">Up", "</a>", "<td",
                     "<td>", "</td>", "<tr>", "</tr>", "<th", "<hr", "<hr>", "</table>", "\"");
     public final static String spaceRegex = "[\\s|\\u00A0]+";
     final static String urlPattern = "(href=)+[^\\s]+[\\w]+[^\"]";

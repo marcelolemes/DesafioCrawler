@@ -19,15 +19,13 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
     public CrawlerServiceImpl() {
     }
 
-    final int limit = System.getenv("MAX_RESULTS") != null ?
-            Integer.parseInt(
-                    System.getenv("MAX_RESULTS")) : -1;
     final static Set<String> processedLinks = Collections.synchronizedSet(new HashSet<>());
     final Set<String> result = Collections.synchronizedSet(new HashSet<>());
 
     static Logger logger = LoggerFactory.getLogger(CrawlerService.class);
 
-    private void urlAnalysis(AtomicInteger counter,
+    private void urlAnalysis(int limit,
+                             AtomicInteger counter,
                              String baseUrl,
                              String keyword)
             throws ExecutionException, InterruptedException {
@@ -48,7 +46,7 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
                                 counter.incrementAndGet();
                                 result.add(innerUri);
                             }
-                            urlAnalysis(counter, innerUri, keyword);
+                            urlAnalysis(limit,counter, innerUri, keyword);
                         }
                     }
                 } catch (IllegalArgumentException ex) {
@@ -62,10 +60,10 @@ public class CrawlerServiceImpl extends Thread implements CrawlerService {
     }
 
     @Override
-    public void run(AtomicInteger counter, String uri, String keyword) {
+    public void run(int limit, AtomicInteger counter, String uri, String keyword) {
         if (AuxiliarMethods.validUrl(uri)) {
             try {
-                this.urlAnalysis(counter, uri, keyword);
+                this.urlAnalysis(limit, counter, uri, keyword);
             } catch (ExecutionException executionException) {
                 logger.error("Erro de execução: " + executionException.getMessage());
             } catch (InterruptedException interruptedException) {

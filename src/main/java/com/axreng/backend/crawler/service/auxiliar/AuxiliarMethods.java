@@ -22,7 +22,7 @@ public interface AuxiliarMethods {
                 throw new IllegalArgumentException("Link inválido" + url);
             }
         } else {
-            throw new IllegalArgumentException("Link Não HTTP encontrado. " + url);
+            throw new IllegalArgumentException("Link inválido encontrado. " + url);
         }
     }
 
@@ -34,19 +34,21 @@ public interface AuxiliarMethods {
         }
     }
 
-    static String linkProcessor(String Uri) throws ExecutionException, InterruptedException {
+    static String linkProcessor(String uri){
         HttpClient client = HttpClient.newHttpClient();
         StringBuilder html = new StringBuilder();
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(Uri))
+                    .uri(URI.create(uri))
                     .build();
             html.append(client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(HttpResponse::body)
                     .get());
-        } catch (Exception e) {
+        } catch (RuntimeException|ExecutionException e) {
             LoggerFactory.getLogger(AuxiliarMethods.class).
-                    error("Não foi possível conectar, verifique a URL! " + Uri);
+                    error("Não foi possível conectar, verifique a URL! " + uri);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         return html.toString();
     }
